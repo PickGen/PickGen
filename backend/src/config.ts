@@ -30,10 +30,16 @@ export const config = {
   } as Record<string, string>,
 
   paymentProvider: env('PAYMENT_PROVIDER', 'mock'),
+  // Public URL of THIS backend (Render) — used for payment webhooks/callbacks.
+  publicApiUrl: env('PUBLIC_API_URL'),
   lemonSqueezy: {
     apiKey: env('LEMONSQUEEZY_API_KEY'),
     storeId: env('LEMONSQUEEZY_STORE_ID'),
     webhookSecret: env('LEMONSQUEEZY_WEBHOOK_SECRET'),
+  },
+  cryptomus: {
+    merchant: env('CRYPTOMUS_MERCHANT'),
+    apiKey: env('CRYPTOMUS_API_KEY'),
   },
 
   freeSignupCredits: envInt('FREE_SIGNUP_CREDITS', 0),

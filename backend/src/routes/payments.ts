@@ -4,6 +4,7 @@ import { requireAuth } from '../auth/plugin.js';
 import { users, payments } from '../db/repos.js';
 import { config, findPackage, PACKAGES } from '../config.js';
 import { getPaymentProvider } from '../providers/payment/index.js';
+import { getCryptomusPayment } from '../providers/payment/cryptomus.js';
 import { publicUser } from './auth.js';
 
 export async function paymentRoutes(app: FastifyInstance): Promise<void> {
@@ -122,6 +123,43 @@ export async function paymentRoutes(app: FastifyInstance): Promise<void> {
         external_id: `${externalId}_refund`,
       });
     }
+
+    return { ok: true };
+  });
+
+  // Cryptomus callback (crypto/card checkout). The callback only triggers a
+  // re-check: we ask Cryptomus for the authoritative status, so a spoofed call
+  // can't grant credits. Routing (user + package) is encoded in order_id.
+  app.post('/api/webhooks/cryptomus', async (req, reply) => {
+    const body = (req.body ?? {}) as { uuid?: string; order_id?: string };
+    if (!body.uuid && !body.order_id) return reply.code(400).send({ error: 'bad_payload' });
+
+    const info = await getCryptomusPayment({ uuid: body.uuid, orderId: body.order_id });
+    if (!info) return reply.code(400).send({ error: 'no_info' });
+
+    const paid = info.payment_status === 'paid' || info.payment_status === 'paid_over';
+    if (!paid) return { ok: true, status: info.payment_status };
+
+    // idempotency by Cryptomus payment uuid
+    const externalId = `cm_${info.uuid}`;
+    if (await payments.findByExternalId(externalId)) return { ok: true, duplicate: true };
+
+    // order_id format: `<pkgId>~<userId>~<nonce>`
+    const [pkgId, userId] = String(info.order_id).split('~');
+    const pkg = pkgId ? findPackage(pkgId) : undefined;
+    if (!pkg || !userId) return reply.code(400).send({ error: 'route_failed' });
+
+    await payments.create({
+      user_id: userId,
+      provider: 'cryptomus',
+      amount: pkg.priceUsd,
+      credits: pkg.credits,
+      type: 'credits_pack',
+      status: 'success',
+      external_id: externalId,
+    });
+    await users.addCredits(userId, pkg.credits);
+    await users.setPlan(userId, pkg.line === 'quality' ? 'pro' : 'standard');
 
     return { ok: true };
   });

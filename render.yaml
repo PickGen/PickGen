@@ -31,9 +31,15 @@ services:
       # ── Frontend origin for CORS (your Vercel URL) ──
       - key: CLIENT_ORIGIN
         sync: false # e.g. https://pickgen.vercel.app
-      # ── Payments (still mock until Lemon Squeezy is wired) ──
+      # ── Payments ── mock until Cryptomus keys are set, then switch to cryptomus
       - key: PAYMENT_PROVIDER
         value: mock
+      - key: PUBLIC_API_URL
+        sync: false # this backend's public URL, e.g. https://pickgen-backend-sqru.onrender.com
+      - key: CRYPTOMUS_MERCHANT
+        sync: false
+      - key: CRYPTOMUS_API_KEY
+        sync: false
       # ── Limits ──
       - key: FREE_SIGNUP_CREDITS
         value: 0
