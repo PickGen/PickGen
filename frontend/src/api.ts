@@ -11,9 +11,13 @@ export class ApiError extends Error {
   }
 }
 
-// In production the backend lives on another domain (Render). Set VITE_API_URL
-// to that URL at build time. In dev it's empty and Vite proxies /api → backend.
-const API_BASE = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
+// In production the backend lives on another domain (Render). Prefer VITE_API_URL
+// when set; otherwise fall back to the known Render backend for prod builds. In
+// dev the base is empty so Vite proxies /api → local backend.
+const PROD_API_FALLBACK = 'https://pickgen-backend-sqru.onrender.com';
+const API_BASE = (
+  import.meta.env.VITE_API_URL ?? (import.meta.env.PROD ? PROD_API_FALLBACK : '')
+).replace(/\/$/, '');
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
