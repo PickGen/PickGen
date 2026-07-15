@@ -10,8 +10,10 @@ import { Pricing } from './components/Pricing';
 import { Account } from './components/Account';
 import { Legal, type LegalDoc } from './components/Legal';
 import { SUPPORT_TELEGRAM, SUPPORT_TELEGRAM_URL } from './support';
+import { useLang } from './i18n';
 
 export function App() {
+  const { t } = useLang();
   const [theme, toggleTheme] = useTheme();
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -57,13 +59,13 @@ export function App() {
   // (the webhook credits it; re-fetch shortly after in case of slight delay).
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get('paid') !== '1') return;
-    notify('Оплата прошла — кредиты начислены');
+    notify(t('toast.paid'));
     window.history.replaceState({}, '', window.location.pathname);
     const refresh = () => api.me().then((r) => setUser(r.user)).catch(() => {});
     refresh();
-    const t = window.setTimeout(refresh, 2500);
-    return () => window.clearTimeout(t);
-  }, [notify]);
+    const timer = window.setTimeout(refresh, 2500);
+    return () => window.clearTimeout(timer);
+  }, [notify, t]);
 
   // load gallery once logged in
   useEffect(() => {
@@ -86,7 +88,7 @@ export function App() {
   }
 
   if (!config) {
-    return <div className="center-loading">Не удалось загрузить конфигурацию сервиса.</div>;
+    return <div className="center-loading">{t('app.configError')}</div>;
   }
 
   return (
@@ -121,9 +123,7 @@ export function App() {
             {view === 'account' && <Account user={user} onLogout={logout} />}
 
             {user.plan === 'free' && (view === 'generator' || view === 'gallery') && (
-              <div className="ad-banner">
-                Реклама · бесплатный тариф. Оформите пакет, чтобы убрать рекламу и открыть режимы «Качество» и «Текст».
-              </div>
+              <div className="ad-banner">{t('app.ad')}</div>
             )}
           </>
         )}
@@ -131,13 +131,13 @@ export function App() {
       <footer className="footer">
         <span>© {new Date().getFullYear()} PickGen</span>
         <span className="footer-sep">·</span>
-        <button className="footer-link" onClick={() => openLegal('terms')}>Соглашение</button>
-        <button className="footer-link" onClick={() => openLegal('privacy')}>Конфиденциальность</button>
-        <button className="footer-link" onClick={() => openLegal('refund')}>Возврат</button>
-        <button className="footer-link" onClick={() => openLegal('content')}>Правила контента</button>
+        <button className="footer-link" onClick={() => openLegal('terms')}>{t('footer.terms')}</button>
+        <button className="footer-link" onClick={() => openLegal('privacy')}>{t('footer.privacy')}</button>
+        <button className="footer-link" onClick={() => openLegal('refund')}>{t('footer.refund')}</button>
+        <button className="footer-link" onClick={() => openLegal('content')}>{t('footer.content')}</button>
         <span className="footer-sep">·</span>
         <a href={SUPPORT_TELEGRAM_URL} target="_blank" rel="noopener noreferrer">
-          Поддержка: @{SUPPORT_TELEGRAM}
+          {t('footer.support')}: @{SUPPORT_TELEGRAM}
         </a>
       </footer>
       {toast && <div className="toast">{toast}</div>}

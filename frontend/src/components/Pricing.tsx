@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { api, ApiError } from '../api';
 import type { AppConfig, Package, User } from '../types';
+import { useLang } from '../i18n';
 
 export function Pricing({
   config,
@@ -11,6 +12,7 @@ export function Pricing({
   onUser: (u: User) => void;
   notify: (msg: string) => void;
 }) {
+  const { t } = useLang();
   const [busy, setBusy] = useState<string | null>(null);
 
   const standard = config.packages.filter((p) => p.line === 'standard');
@@ -21,15 +23,14 @@ export function Pricing({
     try {
       const { checkout } = await api.checkout(pkg.id);
       if (checkout.provider === 'mock') {
-        // Dev flow: complete the simulated purchase (mimics MoR webhook success).
         const res = await api.mockComplete(pkg.id);
         onUser(res.user);
-        notify(`Тестовая оплата · начислено ${res.creditsAdded} кредитов`);
+        notify(t('toast.testPaid', { n: res.creditsAdded }));
       } else {
         window.location.href = checkout.url;
       }
     } catch (err) {
-      notify(err instanceof ApiError ? err.message : 'Ошибка оплаты');
+      notify(err instanceof ApiError ? err.message : t('toast.payError'));
     } finally {
       setBusy(null);
     }
@@ -37,19 +38,19 @@ export function Pricing({
 
   const renderLine = (title: string, sub: string, pkgs: Package[], accent?: boolean) => (
     <div className="card panel price-line">
-      <h3>{title} {accent && <span className="badge">без рекламы</span>}</h3>
+      <h3>{title} {accent && <span className="badge">{t('pricing.noAds')}</span>}</h3>
       <div className="pl-sub">{sub}</div>
       {pkgs.map((p) => (
         <div key={p.id} className={`card pkg ${p.credits === 500 ? 'best' : ''}`}>
-          {p.credits === 500 && <span className="badge-best">выгодно</span>}
+          {p.credits === 500 && <span className="badge-best">{t('pricing.best')}</span>}
           <div>
-            <div className="pkg-credits">{p.label}</div>
-            <div className="pkg-per">${(p.priceUsd / p.credits).toFixed(3)} за генерацию</div>
+            <div className="pkg-credits">{p.credits} {t('pricing.gens')}</div>
+            <div className="pkg-per">${(p.priceUsd / p.credits).toFixed(3)} {t('pricing.perGen')}</div>
           </div>
           <div style={{ textAlign: 'right' }}>
             <div className="pkg-price">${p.priceUsd}</div>
             <button className="btn btn-primary" style={{ marginTop: 6 }} disabled={busy === p.id} onClick={() => buy(p)}>
-              {busy === p.id ? '…' : 'Купить'}
+              {busy === p.id ? '…' : t('pricing.buy')}
             </button>
           </div>
         </div>
@@ -57,27 +58,26 @@ export function Pricing({
     </div>
   );
 
+  const d = config.freeDailyDrafts;
+
   return (
     <div>
-      <div className="section-head"><h1>Тарифы</h1></div>
+      <div className="section-head"><h1>{t('pricing.title')}</h1></div>
       <div className="card panel" style={{ marginBottom: 20, background: 'var(--bg-sunken)' }}>
-        {config.freeDailyDrafts === 0 ? (
+        {d === 0 ? (
           <>
-            <b>Доступ по пакетам.</b> Выберите пакет ниже, чтобы начать генерировать. Кредиты списываются по режиму:
-            черновик 1 · качество 5 · текст 10.
+            <b>{t('pricing.freePaid')}</b> {t('pricing.freePaidRest')}
           </>
         ) : (
           <>
-            <b>Бесплатно</b> — {config.freeDailyDrafts}{' '}
-            {config.freeDailyDrafts === 1 ? 'черновик' : 'черновика'} в день (с рекламой). Платные пакеты отключают
-            рекламу и дают доступ к режимам «Качество» и «Текст». Кредиты списываются по режиму: черновик 1 · качество 5 ·
-            текст 10.
+            <b>{t('pricing.freeNote')}</b> — {d}{' '}
+            {t(d === 1 ? 'pricing.freeNoteDraft' : 'pricing.freeNoteDrafts')} {t('pricing.freeNoteRest')}
           </>
         )}
       </div>
       <div className="pricing-lines">
-        {renderLine('Стандарт', 'Для набросков, идей и экспериментов (Flux Schnell / Pro).', standard)}
-        {renderLine('Качество', 'Максимальное качество Flux 2 Pro — для работы и печати.', quality, true)}
+        {renderLine(t('pricing.lineStandard'), t('pricing.subStandard'), standard)}
+        {renderLine(t('pricing.lineQuality'), t('pricing.subQuality'), quality, true)}
       </div>
     </div>
   );

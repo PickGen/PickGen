@@ -1,12 +1,13 @@
 import type { User } from '../types';
+import { useLang } from '../i18n';
 
 export type View = 'generator' | 'gallery' | 'pricing' | 'account';
 
-const NAV: { id: View; label: string }[] = [
-  { id: 'generator', label: 'Генератор' },
-  { id: 'gallery', label: 'Галерея' },
-  { id: 'pricing', label: 'Тарифы' },
-  { id: 'account', label: 'Аккаунт' },
+const NAV: { id: View; key: string }[] = [
+  { id: 'generator', key: 'nav.generator' },
+  { id: 'gallery', key: 'nav.gallery' },
+  { id: 'pricing', key: 'nav.pricing' },
+  { id: 'account', key: 'nav.account' },
 ];
 
 export function Header({
@@ -22,6 +23,7 @@ export function Header({
   theme: string;
   onToggleTheme: () => void;
 }) {
+  const { t, lang, setLang } = useLang();
   return (
     <header className="header">
       <div className="logo">
@@ -30,15 +32,22 @@ export function Header({
       <nav className="nav">
         {NAV.map((n) => (
           <button key={n.id} className={view === n.id ? 'active' : ''} onClick={() => onNav(n.id)}>
-            {n.label}
+            {t(n.key)}
           </button>
         ))}
       </nav>
       <div className="header-right">
-        <button className="credits-pill" onClick={() => onNav('pricing')} title="Купить кредиты">
+        <button className="credits-pill" onClick={() => onNav('pricing')} title={t('header.credits')}>
           <span>💎</span> <b>{user.credits}</b>
         </button>
-        <button className="icon-btn" onClick={onToggleTheme} title="Сменить тему">
+        <button
+          className="icon-btn"
+          onClick={() => setLang(lang === 'ru' ? 'en' : 'ru')}
+          title={t('header.lang')}
+        >
+          {lang === 'ru' ? 'EN' : 'RU'}
+        </button>
+        <button className="icon-btn" onClick={onToggleTheme} title={t('header.theme')}>
           {theme === 'dark' ? '☀️' : '🌙'}
         </button>
       </div>
