@@ -5,6 +5,7 @@ import { users, payments } from '../db/repos.js';
 import { config, findPackage, PACKAGES } from '../config.js';
 import { getPaymentProvider } from '../providers/payment/index.js';
 import { getCryptomusPayment } from '../providers/payment/cryptomus.js';
+import { getNowPayment } from '../providers/payment/nowpayments.js';
 import { publicUser } from './auth.js';
 
 export async function paymentRoutes(app: FastifyInstance): Promise<void> {
@@ -152,6 +153,38 @@ export async function paymentRoutes(app: FastifyInstance): Promise<void> {
     await payments.create({
       user_id: userId,
       provider: 'cryptomus',
+      amount: pkg.priceUsd,
+      credits: pkg.credits,
+      type: 'credits_pack',
+      status: 'success',
+      external_id: externalId,
+    });
+    await users.addCredits(userId, pkg.credits);
+    await users.setPlan(userId, pkg.line === 'quality' ? 'pro' : 'standard');
+
+    return { ok: true };
+  });
+
+  // NOWPayments IPN (crypto checkout). Re-checks status via their API before
+  // crediting, so a spoofed callback can't grant credits.
+  app.post('/api/webhooks/nowpayments', async (req, reply) => {
+    const body = (req.body ?? {}) as { payment_id?: string | number };
+    if (!body.payment_id) return reply.code(400).send({ error: 'bad_payload' });
+
+    const info = await getNowPayment(String(body.payment_id));
+    if (!info) return reply.code(400).send({ error: 'no_info' });
+    if (info.payment_status !== 'finished') return { ok: true, status: info.payment_status };
+
+    const externalId = `np_${info.payment_id}`;
+    if (await payments.findByExternalId(externalId)) return { ok: true, duplicate: true };
+
+    const [pkgId, userId] = String(info.order_id).split('~');
+    const pkg = pkgId ? findPackage(pkgId) : undefined;
+    if (!pkg || !userId) return reply.code(400).send({ error: 'route_failed' });
+
+    await payments.create({
+      user_id: userId,
+      provider: 'nowpayments',
       amount: pkg.priceUsd,
       credits: pkg.credits,
       type: 'credits_pack',

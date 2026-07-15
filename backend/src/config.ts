@@ -41,6 +41,10 @@ export const config = {
     merchant: env('CRYPTOMUS_MERCHANT'),
     apiKey: env('CRYPTOMUS_API_KEY'),
   },
+  nowPayments: {
+    apiKey: env('NOWPAYMENTS_API_KEY'),
+    ipnSecret: env('NOWPAYMENTS_IPN_SECRET'),
+  },
 
   freeSignupCredits: envInt('FREE_SIGNUP_CREDITS', 0),
   freeDailyDrafts: envInt('FREE_DAILY_DRAFTS', 1),

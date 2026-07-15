@@ -36,9 +36,9 @@ services:
         value: mock
       - key: PUBLIC_API_URL
         sync: false # this backend's public URL, e.g. https://pickgen-backend-sqru.onrender.com
-      - key: CRYPTOMUS_MERCHANT
+      - key: NOWPAYMENTS_API_KEY
         sync: false
-      - key: CRYPTOMUS_API_KEY
+      - key: NOWPAYMENTS_IPN_SECRET
         sync: false
       # ── Limits ──
       - key: FREE_SIGNUP_CREDITS
