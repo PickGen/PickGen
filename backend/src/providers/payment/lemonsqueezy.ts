@@ -36,6 +36,12 @@ export class LemonSqueezyProvider implements PaymentProvider {
               // custom passes back on the webhook so we credit the right user
               custom: { user_id: params.user.id, package_id: params.pkg.id },
             },
+            product_options: {
+              // Send the buyer back to the app after a successful payment.
+              redirect_url: `${config.clientOrigin.split(',')[0]}/?paid=1`,
+              receipt_button_text: 'Вернуться в PickGen',
+              receipt_link_url: config.clientOrigin.split(',')[0],
+            },
           },
           relationships: {
             store: { data: { type: 'stores', id: config.lemonSqueezy.storeId } },

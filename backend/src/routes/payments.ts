@@ -65,15 +65,14 @@ export async function paymentRoutes(app: FastifyInstance): Promise<void> {
     return { ok: true, user: publicUser(fresh), creditsAdded: pkg.credits };
   });
 
-  // Lemon Squeezy webhook (FR-6.3, FR-6.6). Needs raw body for signature check.
-  app.post('/api/webhooks/lemonsqueezy', {
-    config: { rawBody: true },
-  }, async (req, reply) => {
+  // Lemon Squeezy webhook (FR-6.3, FR-6.6). Verifies HMAC over the raw body.
+  app.post('/api/webhooks/lemonsqueezy', async (req, reply) => {
     const secret = config.lemonSqueezy.webhookSecret;
     const signature = req.headers['x-signature'];
-    const raw = (req as unknown as { rawBody?: string }).rawBody ?? JSON.stringify(req.body);
+    const raw = (req as unknown as { rawBody?: Buffer }).rawBody;
 
     if (secret) {
+      if (!raw) return reply.code(400).send({ error: 'no_raw_body' });
       const digest = crypto.createHmac('sha256', secret).update(raw).digest('hex');
       if (typeof signature !== 'string' || !safeEqual(digest, signature)) {
         return reply.code(401).send({ error: 'bad_signature' });

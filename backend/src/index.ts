@@ -19,6 +19,18 @@ const app = Fastify({
 
 await initDb();
 
+// Parse JSON but also keep the raw bytes on req.rawBody — needed to verify the
+// Lemon Squeezy webhook HMAC signature (must hash the exact received payload).
+app.addContentTypeParser('application/json', { parseAs: 'buffer' }, (req, body, done) => {
+  (req as unknown as { rawBody?: Buffer }).rawBody = body as Buffer;
+  if (!body || (body as Buffer).length === 0) return done(null, {});
+  try {
+    done(null, JSON.parse((body as Buffer).toString('utf8')));
+  } catch (err) {
+    done(err as Error, undefined);
+  }
+});
+
 await app.register(cookie);
 // CLIENT_ORIGIN may be a comma-separated list (e.g. prod + preview domains).
 const allowedOrigins = config.clientOrigin.split(',').map((s) => s.trim()).filter(Boolean);

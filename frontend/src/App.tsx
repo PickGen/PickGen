@@ -53,6 +53,18 @@ export function App() {
     })();
   }, []);
 
+  // Returned from a Lemon Squeezy checkout — confirm and refresh the balance
+  // (the webhook credits it; re-fetch shortly after in case of slight delay).
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('paid') !== '1') return;
+    notify('Оплата прошла — кредиты начислены');
+    window.history.replaceState({}, '', window.location.pathname);
+    const refresh = () => api.me().then((r) => setUser(r.user)).catch(() => {});
+    refresh();
+    const t = window.setTimeout(refresh, 2500);
+    return () => window.clearTimeout(t);
+  }, [notify]);
+
   // load gallery once logged in
   useEffect(() => {
     if (user) api.generations().then((r) => setGenerations(r.generations)).catch(() => {});
