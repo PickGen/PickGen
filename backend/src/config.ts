@@ -36,8 +36,8 @@ export const config = {
     webhookSecret: env('LEMONSQUEEZY_WEBHOOK_SECRET'),
   },
 
-  freeSignupCredits: envInt('FREE_SIGNUP_CREDITS', 20),
-  freeDailyDrafts: envInt('FREE_DAILY_DRAFTS', 10),
+  freeSignupCredits: envInt('FREE_SIGNUP_CREDITS', 0),
+  freeDailyDrafts: envInt('FREE_DAILY_DRAFTS', 1),
   rateLimitPerMin: envInt('RATE_LIMIT_PER_MIN', 12),
 } as const;
 

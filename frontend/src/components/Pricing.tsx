@@ -61,8 +61,9 @@ export function Pricing({
     <div>
       <div className="section-head"><h1>Тарифы</h1></div>
       <div className="card panel" style={{ marginBottom: 20, background: 'var(--bg-sunken)' }}>
-        <b>Бесплатно</b> — {config.freeDailyDrafts} черновиков в день (с рекламой). Платные пакеты отключают рекламу и дают
-        доступ к режимам «Качество» и «Текст». Кредиты списываются по режиму: черновик 1 · качество 5 · текст 10.
+        <b>Бесплатно</b> — {config.freeDailyDrafts}{' '}
+        {config.freeDailyDrafts === 1 ? 'черновик' : 'черновика'} в день (с рекламой). Платные пакеты отключают рекламу и
+        дают доступ к режимам «Качество» и «Текст». Кредиты списываются по режиму: черновик 1 · качество 5 · текст 10.
       </div>
       <div className="pricing-lines">
         {renderLine('Стандарт', 'Для набросков, идей и экспериментов (Flux Schnell / Pro).', standard)}
