@@ -95,6 +95,7 @@ export function App() {
     <div className="app">
       <Header user={user} view={view} onNav={goTo} theme={theme} onToggleTheme={toggleTheme} />
       <main className="main">
+        {config.aiProvider === 'mock' && <div className="demo-banner">{t('app.demo')}</div>}
         {legalDoc ? (
           <Legal initial={legalDoc} />
         ) : (

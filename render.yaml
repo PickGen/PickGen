@@ -17,9 +17,10 @@ services:
         value: production
       - key: PORT
         value: 10000
-      # ── AI ──
+      # ── AI ── "mock" = free preview (placeholder images, no fal.ai cost).
+      # Switch to "fal" once a real payment method is live.
       - key: AI_PROVIDER
-        value: fal
+        value: mock
       - key: FAL_KEY
         sync: false # set in dashboard (secret)
       # ── Database (Neon Postgres) ──
@@ -41,12 +42,13 @@ services:
       - key: NOWPAYMENTS_IPN_SECRET
         sync: false
       # ── Limits ──
+      # Preview/demo: generous free access (mock images cost nothing).
       - key: FREE_SIGNUP_CREDITS
-        value: 0
+        value: 50
       - key: FREE_DAILY_DRAFTS
-        value: 1
-      # Paid-only launch: no free drafts until this date, then 1/day kicks in.
+        value: 20
+      # Empty = free tier active now (no paid-only window during preview).
       - key: FREE_TIER_START
-        value: "2026-08-12"
+        value: ""
       - key: RATE_LIMIT_PER_MIN
         value: 12

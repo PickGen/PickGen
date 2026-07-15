@@ -245,6 +245,14 @@ details.advanced summary { cursor: pointer; font-size: 13px; font-weight: 600; c
   text-align: center; color: var(--text-faint); font-size: 13px; background: var(--bg-sunken);
 }
 
+.demo-banner {
+  margin-bottom: 18px; padding: 12px 16px; border-radius: var(--radius-sm);
+  text-align: center; font-size: 13.5px; font-weight: 600;
+  color: var(--accent2);
+  background: linear-gradient(135deg, rgba(124, 92, 255, 0.14), rgba(0, 224, 198, 0.1));
+  border: 1px solid color-mix(in srgb, var(--accent2) 35%, transparent);
+}
+
 .center-loading { min-height: 60vh; display: grid; place-items: center; }
 
 .footer {

@@ -110,6 +110,7 @@ const en: Dict = {
 
   // app
   'app.ad': 'Ad · free plan. Buy a package to remove ads and unlock “Quality” and “Text”.',
+  'app.demo': '🧪 Preview mode — generated images are placeholders. Real AI generation is coming soon.',
   'app.configError': 'Failed to load service configuration.',
   'footer.terms': 'Terms',
   'footer.privacy': 'Privacy',
@@ -225,6 +226,7 @@ const ru: Dict = {
   'account.noPayments': 'Платежей пока нет.',
 
   'app.ad': 'Реклама · бесплатный тариф. Оформите пакет, чтобы убрать рекламу и открыть «Качество» и «Текст».',
+  'app.demo': '🧪 Демо-режим — изображения показаны заглушками. Настоящая ИИ-генерация скоро.',
   'app.configError': 'Не удалось загрузить конфигурацию сервиса.',
   'footer.terms': 'Соглашение',
   'footer.privacy': 'Конфиденциальность',
