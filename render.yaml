@@ -1,0 +1,41 @@
+# Render Blueprint for the PickGen backend (Infrastructure-as-code).
+# In Render: New → Blueprint → point at this repo. It reads this file.
+# Frontend is deployed separately on Vercel (see DEPLOY.md).
+services:
+  - type: web
+    name: pickgen-backend
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      # ── AI ──
+      - key: AI_PROVIDER
+        value: fal
+      - key: FAL_KEY
+        sync: false # set in dashboard (secret)
+      # ── Database (Neon Postgres) ──
+      - key: DATABASE_URL
+        sync: false # paste Neon connection string in dashboard
+      # ── Auth ──
+      - key: JWT_SECRET
+        generateValue: true # Render generates a strong secret
+      # ── Frontend origin for CORS (your Vercel URL) ──
+      - key: CLIENT_ORIGIN
+        sync: false # e.g. https://pickgen.vercel.app
+      # ── Payments (still mock until Lemon Squeezy is wired) ──
+      - key: PAYMENT_PROVIDER
+        value: mock
+      # ── Limits ──
+      - key: FREE_SIGNUP_CREDITS
+        value: 20
+      - key: FREE_DAILY_DRAFTS
+        value: 10
+      - key: RATE_LIMIT_PER_MIN
+        value: 12
