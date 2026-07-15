@@ -38,8 +38,20 @@ export const config = {
 
   freeSignupCredits: envInt('FREE_SIGNUP_CREDITS', 0),
   freeDailyDrafts: envInt('FREE_DAILY_DRAFTS', 1),
+  // Paid-only launch window: before this ISO date there are NO free drafts.
+  // Empty = free tier active immediately.
+  freeTierStart: env('FREE_TIER_START'),
   rateLimitPerMin: envInt('RATE_LIMIT_PER_MIN', 12),
 } as const;
+
+/** Effective free daily drafts right now — 0 during the paid-only launch window. */
+export function freeDailyDraftsNow(): number {
+  if (config.freeTierStart) {
+    const start = Date.parse(config.freeTierStart);
+    if (Number.isFinite(start) && Date.now() < start) return 0;
+  }
+  return config.freeDailyDrafts;
+}
 
 // ── Generation modes (FR-2.x, 8.5) ──────────────────────────────────
 export type Mode = 'draft' | 'quality' | 'text';

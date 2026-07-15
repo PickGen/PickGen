@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { requireAuth } from '../auth/plugin.js';
 import { publicUser } from './auth.js';
-import { config, MODES, STYLES, FORMATS, DEFAULT_MODE, PACKAGES } from '../config.js';
+import { config, freeDailyDraftsNow, MODES, STYLES, FORMATS, DEFAULT_MODE, PACKAGES } from '../config.js';
 
 export async function meRoutes(app: FastifyInstance): Promise<void> {
   app.get('/api/me', { preHandler: requireAuth }, async (req) => {
@@ -17,7 +17,7 @@ export async function meRoutes(app: FastifyInstance): Promise<void> {
       formats: Object.entries(FORMATS).map(([id, f]) => ({ id, ...f })),
       packages: PACKAGES,
       freeSignupCredits: config.freeSignupCredits,
-      freeDailyDrafts: config.freeDailyDrafts,
+      freeDailyDrafts: freeDailyDraftsNow(),
       paymentProvider: config.paymentProvider,
       aiProvider: config.aiProvider,
     };

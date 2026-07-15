@@ -39,5 +39,8 @@ services:
         value: 0
       - key: FREE_DAILY_DRAFTS
         value: 1
+      # Paid-only launch: no free drafts until this date, then 1/day kicks in.
+      - key: FREE_TIER_START
+        value: "2026-08-12"
       - key: RATE_LIMIT_PER_MIN
         value: 12

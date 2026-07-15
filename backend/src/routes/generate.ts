@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { requireAuth } from '../auth/plugin.js';
 import { users, generations } from '../db/repos.js';
-import { config, MODES, FORMATS, type Mode, type Style, type Format } from '../config.js';
+import { config, freeDailyDraftsNow, MODES, FORMATS, type Mode, type Style, type Format } from '../config.js';
 import { getImageProvider, GenerationError } from '../providers/image/index.js';
 import { buildFinalPrompt } from '../services/prompt.js';
 import { moderatePrompt } from '../services/moderation.js';
@@ -59,7 +59,7 @@ export async function generateRoutes(app: FastifyInstance): Promise<void> {
       let usedFreeDaily = false;
       if (mode === 'draft' && user.plan === 'free') {
         const usedToday = await generations.countDraftsToday(user.id);
-        if (usedToday < config.freeDailyDrafts) {
+        if (usedToday < freeDailyDraftsNow()) {
           cost = 0;
           usedFreeDaily = true;
         }

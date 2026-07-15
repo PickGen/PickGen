@@ -45,11 +45,17 @@ export function AuthScreen({ config, onLogin }: { config: AppConfig | null; onLo
         {error && <p style={{ color: 'var(--danger)', fontSize: 13 }}>{error}</p>}
         {config && (
           <p style={{ fontSize: 12, marginTop: 16 }}>
-            Бесплатно — {config.freeDailyDrafts}{' '}
-            {config.freeDailyDrafts === 1 ? 'черновик' : 'черновика'} в день.
-            {config.freeSignupCredits > 0
-              ? ` Плюс ${config.freeSignupCredits} приветственных кредитов.`
-              : ' Больше генераций — по тарифу.'}
+            {config.freeDailyDrafts === 0 ? (
+              <>Доступ по пакетам — оформите тариф, чтобы начать генерировать.</>
+            ) : (
+              <>
+                Бесплатно — {config.freeDailyDrafts}{' '}
+                {config.freeDailyDrafts === 1 ? 'черновик' : 'черновика'} в день.
+                {config.freeSignupCredits > 0
+                  ? ` Плюс ${config.freeSignupCredits} приветственных кредитов.`
+                  : ' Больше генераций — по тарифу.'}
+              </>
+            )}
           </p>
         )}
         <p style={{ fontSize: 12, marginTop: 12 }}>
