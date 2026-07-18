@@ -6,7 +6,7 @@ import { config, findPackage, PACKAGES } from '../config.js';
 import { getPaymentProvider } from '../providers/payment/index.js';
 import { getCryptomusPayment } from '../providers/payment/cryptomus.js';
 import { getNowPayment } from '../providers/payment/nowpayments.js';
-import { verifyPaddleSignature } from '../providers/payment/paddle.js';
+import { getPaddleTransaction } from '../providers/payment/paddle.js';
 import { publicUser } from './auth.js';
 
 export async function paymentRoutes(app: FastifyInstance): Promise<void> {
@@ -198,27 +198,26 @@ export async function paymentRoutes(app: FastifyInstance): Promise<void> {
     return { ok: true };
   });
 
-  // Paddle webhook (transaction.completed → credit). Verifies HMAC signature.
+  // Paddle webhook. The callback only triggers a re-check: we ask Paddle for the
+  // authoritative transaction status (so a spoofed call can't grant credits, and
+  // it avoids raw-body signature fragility).
   app.post('/api/webhooks/paddle', async (req, reply) => {
-    const secret = config.paddle.webhookSecret;
-    const raw = (req as unknown as { rawBody?: Buffer }).rawBody;
-    if (secret) {
-      if (!raw || !verifyPaddleSignature(raw, req.headers['paddle-signature'] as string, secret)) {
-        return reply.code(401).send({ error: 'bad_signature' });
-      }
-    }
-
     const event = req.body as PaddleEvent;
-    // Credit on a completed/paid transaction.
     if (event?.event_type !== 'transaction.completed' && event?.event_type !== 'transaction.paid') {
       return { ok: true, ignored: event?.event_type };
     }
-    const txn = event.data;
-    const userId = txn?.custom_data?.user_id;
-    const packageId = txn?.custom_data?.package_id;
+    const txnId = event.data?.id;
+    if (!txnId) return reply.code(400).send({ error: 'no_txn' });
+
+    const txn = await getPaddleTransaction(txnId);
+    if (!txn) return reply.code(400).send({ error: 'no_info' });
+    if (txn.status !== 'completed' && txn.status !== 'paid') return { ok: true, status: txn.status };
+
+    const userId = txn.custom_data?.user_id;
+    const packageId = txn.custom_data?.package_id;
     if (!userId || !packageId) return reply.code(400).send({ error: 'no_custom_data' });
 
-    const externalId = `pdl_${txn.id}`;
+    const externalId = `pdl_${txnId}`;
     if (await payments.findByExternalId(externalId)) return { ok: true, duplicate: true };
 
     const pkg = findPackage(packageId);
