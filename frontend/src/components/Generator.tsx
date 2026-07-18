@@ -71,8 +71,17 @@ export function Generator({
       onGenerated(res.generation);
       if (res.usedFreeDaily) notify(t('toast.usedFreeDaily'));
     } catch (err) {
-      if (err instanceof ApiError) setError({ code: err.code, message: err.message });
-      else setError({ code: 'error', message: t('gen.somethingWrong') });
+      if (err instanceof ApiError) {
+        // Out of credits → take the user straight to Pricing.
+        if (err.code === 'no_credits') {
+          notify(err.message || t('gen.noCredits'));
+          onNav('pricing');
+          return;
+        }
+        setError({ code: err.code, message: err.message });
+      } else {
+        setError({ code: 'error', message: t('gen.somethingWrong') });
+      }
     } finally {
       setLoading(false);
     }
