@@ -120,7 +120,7 @@ export function App() {
                 onRepeat={(g) => { setPrefill(g); goTo('generator'); }}
               />
             )}
-            {view === 'pricing' && <Pricing config={config} onUser={setUser} notify={notify} />}
+            {view === 'pricing' && <Pricing config={config} user={user} onUser={setUser} notify={notify} />}
             {view === 'account' && <Account user={user} onLogout={logout} />}
 
             {user.plan === 'free' && (view === 'generator' || view === 'gallery') && (

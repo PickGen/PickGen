@@ -6,6 +6,7 @@ import { config, findPackage, PACKAGES } from '../config.js';
 import { getPaymentProvider } from '../providers/payment/index.js';
 import { getCryptomusPayment } from '../providers/payment/cryptomus.js';
 import { getNowPayment } from '../providers/payment/nowpayments.js';
+import { verifyPaddleSignature } from '../providers/payment/paddle.js';
 import { publicUser } from './auth.js';
 
 export async function paymentRoutes(app: FastifyInstance): Promise<void> {
@@ -196,6 +197,52 @@ export async function paymentRoutes(app: FastifyInstance): Promise<void> {
 
     return { ok: true };
   });
+
+  // Paddle webhook (transaction.completed → credit). Verifies HMAC signature.
+  app.post('/api/webhooks/paddle', async (req, reply) => {
+    const secret = config.paddle.webhookSecret;
+    const raw = (req as unknown as { rawBody?: Buffer }).rawBody;
+    if (secret) {
+      if (!raw || !verifyPaddleSignature(raw, req.headers['paddle-signature'] as string, secret)) {
+        return reply.code(401).send({ error: 'bad_signature' });
+      }
+    }
+
+    const event = req.body as PaddleEvent;
+    // Credit on a completed/paid transaction.
+    if (event?.event_type !== 'transaction.completed' && event?.event_type !== 'transaction.paid') {
+      return { ok: true, ignored: event?.event_type };
+    }
+    const txn = event.data;
+    const userId = txn?.custom_data?.user_id;
+    const packageId = txn?.custom_data?.package_id;
+    if (!userId || !packageId) return reply.code(400).send({ error: 'no_custom_data' });
+
+    const externalId = `pdl_${txn.id}`;
+    if (await payments.findByExternalId(externalId)) return { ok: true, duplicate: true };
+
+    const pkg = findPackage(packageId);
+    if (!pkg) return reply.code(400).send({ error: 'invalid_package' });
+
+    await payments.create({
+      user_id: userId,
+      provider: 'paddle',
+      amount: pkg.priceUsd,
+      credits: pkg.credits,
+      type: 'credits_pack',
+      status: 'success',
+      external_id: externalId,
+    });
+    await users.addCredits(userId, pkg.credits);
+    await users.setPlan(userId, pkg.line === 'quality' ? 'pro' : 'standard');
+
+    return { ok: true };
+  });
+}
+
+interface PaddleEvent {
+  event_type?: string;
+  data: { id: string; custom_data?: { user_id?: string; package_id?: string } };
 }
 
 interface LsEvent {

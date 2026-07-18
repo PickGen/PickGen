@@ -8,6 +8,14 @@ function envInt(key: string, fallback: number): number {
   const n = v ? parseInt(v, 10) : NaN;
   return Number.isFinite(n) ? n : fallback;
 }
+function parseJsonMap(s: string): Record<string, string> {
+  try {
+    const o = JSON.parse(s);
+    return o && typeof o === 'object' ? o : {};
+  } catch {
+    return {};
+  }
+}
 
 export const config = {
   port: envInt('PORT', 8787),
@@ -44,6 +52,14 @@ export const config = {
   nowPayments: {
     apiKey: env('NOWPAYMENTS_API_KEY'),
     ipnSecret: env('NOWPAYMENTS_IPN_SECRET'),
+  },
+  paddle: {
+    apiKey: env('PADDLE_API_KEY'),
+    clientToken: env('PADDLE_CLIENT_TOKEN'),
+    webhookSecret: env('PADDLE_WEBHOOK_SECRET'),
+    env: env('PADDLE_ENV', 'sandbox'), // 'sandbox' | 'production'
+    // package id -> Paddle price id, as JSON: {"std_200":"pri_...", ...}
+    priceMap: parseJsonMap(env('PADDLE_PRICE_MAP', '{}')),
   },
 
   freeSignupCredits: envInt('FREE_SIGNUP_CREDITS', 0),

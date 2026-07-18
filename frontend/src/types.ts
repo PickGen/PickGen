@@ -34,6 +34,7 @@ export interface Package {
   credits: number;
   priceUsd: number;
   label: string;
+  paddlePriceId?: string;
 }
 
 export interface AppConfig {
@@ -46,6 +47,7 @@ export interface AppConfig {
   freeDailyDrafts: number;
   paymentProvider: string;
   aiProvider: string;
+  paddle?: { clientToken: string; env: string };
 }
 
 export interface Generation {

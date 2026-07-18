@@ -2,13 +2,16 @@ import { useState } from 'react';
 import { api, ApiError } from '../api';
 import type { AppConfig, Package, User } from '../types';
 import { useLang } from '../i18n';
+import { openPaddleCheckout } from '../paddle';
 
 export function Pricing({
   config,
+  user,
   onUser,
   notify,
 }: {
   config: AppConfig;
+  user: User;
   onUser: (u: User) => void;
   notify: (msg: string) => void;
 }) {
@@ -21,6 +24,19 @@ export function Pricing({
   async function buy(pkg: Package) {
     setBusy(pkg.id);
     try {
+      // Paddle: open the checkout overlay directly (client-side via Paddle.js).
+      if (config.paymentProvider === 'paddle' && config.paddle) {
+        if (!pkg.paddlePriceId) throw new Error('Paddle price not configured');
+        await openPaddleCheckout({
+          clientToken: config.paddle.clientToken,
+          env: config.paddle.env,
+          priceId: pkg.paddlePriceId,
+          userId: user.id,
+          packageId: pkg.id,
+          successUrl: `${window.location.origin}/?paid=1`,
+        });
+        return;
+      }
       const { checkout } = await api.checkout(pkg.id);
       if (checkout.provider === 'mock') {
         const res = await api.mockComplete(pkg.id);

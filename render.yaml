@@ -41,6 +41,17 @@ services:
         sync: false
       - key: NOWPAYMENTS_IPN_SECRET
         sync: false
+      # Paddle (MoR, card payments). Set when PAYMENT_PROVIDER=paddle.
+      - key: PADDLE_ENV
+        value: sandbox # switch to "production" after Paddle approval
+      - key: PADDLE_API_KEY
+        sync: false
+      - key: PADDLE_CLIENT_TOKEN
+        sync: false
+      - key: PADDLE_WEBHOOK_SECRET
+        sync: false
+      - key: PADDLE_PRICE_MAP
+        sync: false # {"std_200":"pri_...", ...}
       # ── Limits ──
       # Preview/demo: generous free access (mock images cost nothing).
       - key: FREE_SIGNUP_CREDITS
