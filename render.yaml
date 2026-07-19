@@ -53,12 +53,11 @@ services:
       - key: PADDLE_PRICE_MAP
         sync: false # {"std_200":"pri_...", ...}
       # ── Limits ──
-      # Preview/demo: generous free access (mock images cost nothing).
+      # Paid-only: no free credits, no free daily drafts.
       - key: FREE_SIGNUP_CREDITS
-        value: 50
+        value: 0
       - key: FREE_DAILY_DRAFTS
-        value: 20
-      # Empty = free tier active now (no paid-only window during preview).
+        value: 0
       - key: FREE_TIER_START
         value: ""
       - key: RATE_LIMIT_PER_MIN
