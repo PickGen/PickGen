@@ -3,6 +3,12 @@ import { api, ApiError } from '../api';
 import type { AppConfig, Generation, ModeId, User } from '../types';
 import { useLang } from '../i18n';
 
+// Pre-generated showcase images (served from /public/examples).
+const SHOWCASE = [
+  'astronaut-cat', 'coffee-shop', 'mountain-logo', 'cyberpunk',
+  'fox-watercolor', 'cute-robot', 'lion', 'castle',
+];
+
 const EXAMPLES: Record<string, string[]> = {
   ru: [
     'рыжий кот в очках на закате',
@@ -216,6 +222,12 @@ export function Generator({
           <div className="canvas-empty">
             <div className="big">🎨</div>
             <div>{t('gen.empty')}</div>
+            <div className="showcase-title">{t('gen.examplesTitle')}</div>
+            <div className="showcase-grid">
+              {SHOWCASE.map((n) => (
+                <img key={n} src={`/examples/${n}.jpg`} alt="PickGen example" loading="lazy" />
+              ))}
+            </div>
           </div>
         )}
       </div>

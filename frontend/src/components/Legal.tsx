@@ -3,9 +3,9 @@ import { SUPPORT_TELEGRAM, SUPPORT_TELEGRAM_URL } from '../support';
 
 /** Effective date shown on all documents. Update when the texts change. */
 const EFFECTIVE_DATE = '15.07.2026';
-/** Fill these in with your real legal details before going live. */
-const OPERATOR = 'Оператор сервиса PickGen (ИП / самозанятый — укажите реквизиты)';
-const CONTACT_EMAIL = 'support@pickgen.app';
+/** Operator legal details. */
+const OPERATOR = 'Saparbek Miras (Казахстан)';
+const CONTACT_EMAIL = 'Miras.saparbek2710@gmail.com';
 
 export type LegalDoc = 'terms' | 'privacy' | 'refund' | 'content';
 
