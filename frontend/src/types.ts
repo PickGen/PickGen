@@ -3,6 +3,10 @@ export interface User {
   email: string;
   credits: number;
   plan: string;
+  firstName: string | null;
+  lastName: string | null;
+  username: string | null;
+  useCase: string | null;
   createdAt: string;
 }
 

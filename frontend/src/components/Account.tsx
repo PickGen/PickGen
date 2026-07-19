@@ -19,6 +19,10 @@ export function Account({ user, onLogout }: { user: User; onLogout: () => void }
 
       <div className="card panel">
         <div style={{ display: 'grid', gap: 10 }}>
+          {(user.firstName || user.lastName) && (
+            <Row label={t('auth.firstName')} value={[user.firstName, user.lastName].filter(Boolean).join(' ')} />
+          )}
+          {user.username && <Row label={t('auth.username')} value={`@${user.username.replace(/^@/, '')}`} />}
           <Row label={t('account.email')} value={user.email} />
           <Row label={t('account.plan')} value={<span className="badge">{user.plan}</span>} />
           <Row label={t('account.balance')} value={<b>{user.credits} 💎</b>} />

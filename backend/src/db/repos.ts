@@ -19,8 +19,11 @@ export const users = {
   getByEmail(email: string): Promise<UserRow | undefined> {
     return dbGet<UserRow>('SELECT * FROM users WHERE email = $1', [email]);
   },
-  /** Find by email or create with free trial credits (FR-5.6). */
-  async findOrCreate(email: string): Promise<UserRow> {
+  /** Find by email or create with free trial credits + optional profile (FR-5.6). */
+  async findOrCreate(
+    email: string,
+    profile?: { firstName?: string; lastName?: string; username?: string; useCase?: string },
+  ): Promise<UserRow> {
     const existing = await this.getByEmail(email);
     if (existing) return existing;
     const row: UserRow = {
@@ -28,12 +31,16 @@ export const users = {
       email,
       credits: config.freeSignupCredits,
       plan: 'free',
+      first_name: profile?.firstName ?? null,
+      last_name: profile?.lastName ?? null,
+      username: profile?.username ?? null,
+      use_case: profile?.useCase ?? null,
       created_at: now(),
     };
     await dbRun(
-      `INSERT INTO users (id, email, credits, plan, created_at)
-       VALUES ($1, $2, $3, $4, $5) ON CONFLICT (email) DO NOTHING`,
-      [row.id, row.email, row.credits, row.plan, row.created_at],
+      `INSERT INTO users (id, email, credits, plan, first_name, last_name, username, use_case, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (email) DO NOTHING`,
+      [row.id, row.email, row.credits, row.plan, row.first_name, row.last_name, row.username, row.use_case, row.created_at],
     );
     // Re-read to cover the race where a concurrent request created it first.
     return (await this.getByEmail(email))!;

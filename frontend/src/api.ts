@@ -36,8 +36,17 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 export const api = {
   config: () => request<AppConfig>('/api/config'),
   me: () => request<{ user: User }>('/api/me'),
-  login: (email: string) =>
-    request<{ user: User }>('/api/auth/login', { method: 'POST', body: JSON.stringify({ email }) }),
+  login: (payload: {
+    email: string;
+    firstName?: string;
+    lastName?: string;
+    username?: string;
+    useCase?: string;
+  }) =>
+    request<{ user?: User; needsProfile?: boolean }>('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
   logout: () => request<{ ok: true }>('/api/auth/logout', { method: 'POST' }),
 
   generate: (payload: {

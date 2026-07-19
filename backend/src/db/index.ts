@@ -17,6 +17,10 @@ export type UserRow = {
   email: string;
   credits: number;
   plan: string;
+  first_name: string | null;
+  last_name: string | null;
+  username: string | null;
+  use_case: string | null;
   created_at: string;
 };
 
@@ -90,6 +94,10 @@ CREATE TABLE IF NOT EXISTS users (
   email        TEXT UNIQUE NOT NULL,
   credits      INTEGER NOT NULL DEFAULT 0,
   plan         TEXT NOT NULL DEFAULT 'free',
+  first_name   TEXT,
+  last_name    TEXT,
+  username     TEXT,
+  use_case     TEXT,
   created_at   TEXT NOT NULL
 );
 
@@ -121,6 +129,23 @@ CREATE TABLE IF NOT EXISTS payments (
 CREATE INDEX IF NOT EXISTS idx_payments_user ON payments(user_id, created_at DESC);
 `;
 
+// Columns added after v1 — applied idempotently so existing DBs get them too.
+const MIGRATIONS = ['first_name', 'last_name', 'username', 'use_case'];
+
+async function migrate(): Promise<void> {
+  for (const col of MIGRATIONS) {
+    if (pgPool) {
+      await pgPool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS ${col} TEXT`);
+    } else if (sqliteDb) {
+      try {
+        sqliteDb.exec(`ALTER TABLE users ADD COLUMN ${col} TEXT`);
+      } catch {
+        /* column already exists — ignore */
+      }
+    }
+  }
+}
+
 export async function initDb(): Promise<void> {
   if (usingPostgres) {
     const { Pool } = await import('pg');
@@ -131,6 +156,7 @@ export async function initDb(): Promise<void> {
       max: 5,
     });
     await pgPool.query(SCHEMA);
+    await migrate();
     console.log('DB: Postgres (DATABASE_URL) connected');
   } else {
     const { mkdirSync } = await import('node:fs');
@@ -143,6 +169,7 @@ export async function initDb(): Promise<void> {
     sqliteDb.pragma('journal_mode = WAL');
     sqliteDb.pragma('foreign_keys = ON');
     sqliteDb.exec(SCHEMA);
+    await migrate();
     console.log(`DB: SQLite (${config.dbPath})`);
   }
 }
