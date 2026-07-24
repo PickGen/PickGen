@@ -32,9 +32,9 @@ services:
       # ── Frontend origin for CORS (your Vercel URL) ──
       - key: CLIENT_ORIGIN
         sync: false # e.g. https://pickgen.vercel.app
-      # ── Payments ── mock until Cryptomus keys are set, then switch to cryptomus
+      # ── Payments ── Paddle (MoR, cards). Sandbox until Paddle approves the account.
       - key: PAYMENT_PROVIDER
-        value: mock
+        value: paddle
       - key: PUBLIC_API_URL
         sync: false # this backend's public URL, e.g. https://pickgen-backend-sqru.onrender.com
       - key: NOWPAYMENTS_API_KEY
